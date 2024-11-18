@@ -1,65 +1,64 @@
 local astar = {}
 
-function astar.find( getneighbors, heuristics, graph, start, goal )
-	local opennode, openheuristics, nopen = {goal}, {0}, 1
-	local closedfrom, closedcost = {}, {[goal] = 0}
-	local nodebuffer, costbuffer = {}, {}
-	while nopen > 0 do
-		local currentnode = opennode[1]
+function astar.find(graph, start_node, goal_node, neighbors_dist, h)
+	local open_node, open_h, n_open = {goal_node}, {0}, 1
+	local closed_from, closed_cost = {}, {[goal_node] = 0}
+	while n_open > 0 do
+		local current_node = open_node[1]
 
-		-- We are finding path from the goal to the the start to remove reverse step
-		if currentnode == start then
-			local path, from, i = {start}, closedfrom[start], 1
+		-- We are finding path from the goal_node to the the start_node to remove reverse step
+		if current_node == start_node then
+			local path, from, i = {start_node}, closed_from[start_node], 1
 			while from ~= nil do
 				i = i + 1
 				path[i] = from
-				from = closedfrom[from]
+				from = closed_from[from]
 			end
 			return path
 		end
 
 		-- Put the last node on the top
-		opennode[1], opennode[nopen] = opennode[nopen], nil
-		openheuristics[1], openheuristics[nopen] = openheuristics[nopen], nil
-		nopen = nopen-1
+		open_node[1], open_node[n_open] = open_node[n_open], nil
+		open_h[1], open_h[n_open] = open_h[n_open], nil
+		n_open = n_open-1
 		-- Heapify by sifting top down
-		local i, left, right = 1, 2, 3
-		while left <= nopen do
-			local smaller = left
-			if right <= nopen and openheuristics[left] > openheuristics[right] then
-				smaller = right
+		local i, left_idx, right_idx = 1, 2, 3
+		while left_idx <= n_open do
+			local smaller_idx = left_idx
+			if right_idx <= n_open and open_h[left_idx] > open_h[right_idx] then
+				smaller_idx = right_idx
 			end
-			if openheuristics[i] > openheuristics[smaller] then
-				opennode[i], opennode[smaller] = opennode[smaller], opennode[i]
-				openheuristics[i], openheuristics[smaller] = openheuristics[smaller], openheuristics[i]
+			if open_h[i] > open_h[smaller_idx] then
+				open_node[i], open_node[smaller_idx] = open_node[smaller_idx], open_node[i]
+				open_h[i], open_h[smaller_idx] = open_h[smaller_idx], open_h[i]
 			else
 				break
 			end
-			i = smaller
-			left = i + i
-			right = left + 1
+			i = smaller_idx
+			left_idx = i + i
+			right_idx = left_idx + 1
 		end
 
-		local currentcost = closedcost[currentnode]
-		for neighbor, addneighborcost in pairs( getneighbors( graph, currentnode )) do
-			local neighborcost = currentcost + addneighborcost
-			local storedcost = closedcost[neighbor]
+		local g = closed_cost[current_node]
+		for neighbor, d in neighbors_dist(graph, current_node) do
+			local neighbor_cost = g + d
+			local stored_cost = closed_cost[neighbor]
 			-- Update closed set if the node is not visited or has worse cost
-			if storedcost == nil or storedcost > neighborcost then
-				closedcost[neighbor] = neighborcost
-				closedfrom[neighbor] = currentnode
+			if stored_cost == nil or stored_cost > neighbor_cost then
+				closed_cost[neighbor] = neighbor_cost
+				closed_from[neighbor] = current_node
 				-- Put new node in the the end of the heap
-				nopen = nopen + 1
-				opennode[nopen] = neighbor
-				openheuristics[nopen] = neighborcost + heuristics( graph, neighbor, goal )
+				n_open = n_open + 1
+				open_node[n_open] = neighbor
+				open_h[n_open] = neighbor_cost + h(graph, neighbor, goal_node)
 				-- Heapify by sifting new node up
-				local k, parent = nopen, nopen/2
-				parent = parent - parent%1 -- Hacky floor, faster on vanilla Lua
-				while k > 1 and openheuristics[parent] > openheuristics[k] do
-					opennode[parent], opennode[k] = opennode[k], opennode[parent]
-					openheuristics[parent], openheuristics[k] = openheuristics[k], openheuristics[parent]
-					k, parent = parent, parent/2
-					parent = parent - parent%1
+				local k, parent_idx = n_open, n_open / 2
+				parent_idx = parent_idx - parent_idx%1 -- Hacky floor, faster on vanilla Lua
+				while k > 1 and open_h[parent_idx] > open_h[k] do
+					open_node[parent_idx], open_node[k] = open_node[k], open_node[parent_idx]
+					open_h[parent_idx], open_h[k] = open_h[k], open_h[parent_idx]
+					k, parent_idx = parent_idx, parent_idx / 2
+					parent_idx = parent_idx - parent_idx%1
 				end
 			end
 		end

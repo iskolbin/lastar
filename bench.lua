@@ -72,28 +72,28 @@ for _, width in ipairs{10, 20, 30} do
 		addnodeif( x > 1 and y > 1, neighbors, level, x-1, y-1, n, 1.41 )
 		addnodeif( x < w and y < h, neighbors, level, x+1, y+1, n, 1.41 )
 		addnodeif( x < w and y > 1, neighbors, level, x+1, y-1, n, 1.41 )
-		return neighbors
+		return pairs(neighbors)
 	end
 	local t0, n = os.clock(), 1e4
 	for i = 1, n do
-		local path = astar.find( getneighbors, heuristics, emptylevel( width, width, 1 ),
-		xy2id( 1, width ), xy2id( width, 1 ))
+		local path = astar.find( emptylevel( width, width, 1 ),
+		xy2id( 1, width ), xy2id( width, 1 ), getneighbors, heuristics )
 	end
 	print( n/(os.clock()-t0), ('%dx%d EMPTY'):format(width, width))
 
 	for _, density in ipairs{0.1, 0.25, 0.5, 0.7} do
 		local t0, n = os.clock(), 1e4
 		for i = 1, n do
-			local path = astar.find( getneighbors, heuristics, randomlevel( width, width, 1, 100, density ),
-			xy2id( 1, width ), xy2id( width, 1 ))
+			local path = astar.find( randomlevel( width, width, 1, 100, density ),
+			xy2id( 1, width ), xy2id( width, 1 ), getneighbors, heuristics )
 		end
 		print( n/(os.clock()-t0), ('%dx%d RANDOM %g'):format(width, width, density))
 	end
 
 	local t0, n = os.clock(), 1e4
 	for i = 1, n do
-		local path = astar.find( getneighbors, heuristics, badlevel( width, width, 1, 100 ),
-		xy2id( 1, width ), xy2id( width, 1 ))
+		local path = astar.find( badlevel( width, width, 1, 100 ),
+		xy2id( 1, width ), xy2id( width, 1 ), getneighbors, heuristics )
 	end
 	print( n/(os.clock()-t0), ('%dx%d BAD'):format(width, width))
 end

@@ -52,7 +52,7 @@ local function getneighbors( level, nodeid )
 	addnodeif( x > 1 and y > 1, neighbors, level, x-1, y-1, n, 1.41 )
 	addnodeif( x < w and y < h, neighbors, level, x+1, y+1, n, 1.41 )
 	addnodeif( x < w and y > 1, neighbors, level, x+1, y-1, n, 1.41 )
-	return neighbors
+	return pairs(neighbors)
 end
 
 local function getneighborsprealloc( level, nodeid, neighbors )
@@ -77,8 +77,8 @@ end
 
 print( 'Walls are impassable' )
 local level1 = makelevel( 1, math.huge )
-local path = astar.find( getneighbors, heuristics, level1,
-	xy2id( 1, height ), xy2id( width, 1 ))
+local path = astar.find(level1,
+	xy2id( 1, height ), xy2id( width, 1 ), getneighbors, heuristics)
 
 for i = 1, #level1 do
 	if level1[i] == math.huge then level1[i] = 9 end
@@ -99,8 +99,8 @@ io.write('\n')
 
 print( 'Walls are highly more coslty' )
 local level2 = makelevel( 1, 100 )
-local path = astar.find( getneighbors, heuristics, level2,
-	xy2id( 1, height ), xy2id( width, 1 ))
+local path = astar.find(  level2,
+	xy2id( 1, height ), xy2id( width, 1 ),getneighbors, heuristics )
 
 for i = 1, #level2 do
 	if level2[i] == 100 then level2[i] = 9 end
@@ -121,8 +121,8 @@ io.write('\n')
 
 print( 'Walls are slightly more coslty' )
 local level3 = makelevel( 1, 2 )
-local path = astar.find( getneighbors, heuristics, level3,
-	xy2id( 1, height ), xy2id( width, 1 ))
+local path = astar.find(  level3,
+	xy2id( 1, height ), xy2id( width, 1 ), getneighbors, heuristics )
 
 for i = 1, #level3 do
 	if level3[i] == 2 then level3[i] = 9 end
@@ -145,8 +145,8 @@ print( 'No path' )
 local level4 = makelevel( 1, math.huge )
 level4[xy2id( 1, 2 )] = math.huge
 level4[xy2id( width-1, height )] = math.huge
-local path = astar.find( getneighbors, heuristics, level4,
-	xy2id( 1, height ), xy2id( width, 1 ))
+local path = astar.find(  level4,
+	xy2id( 1, height ), xy2id( width, 1 ), getneighbors, heuristics )
 
 for i = 1, #level4 do
 	if level4[i] == math.huge then level4[i] = 9 end
